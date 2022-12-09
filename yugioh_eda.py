@@ -18,15 +18,31 @@ prices = prices.loc[(prices['rarity'] != 'Starlight Rare') & (prices['rarity'] !
 
 n = prices["name"].value_counts()
 lowest_others = prices.groupby('name').min('min_price')['min_price']
+highest_others = prices.groupby('name').max('min_price')['min_price']
 
 prices['num_printings'] = [n[x] for x in prices['name']]
 prices['cheapest_copy'] = [lowest_others[x] for x in prices['name']]
+prices['expensive_copy'] = [highest_others[x] for x in prices['name']]
+prices['ratio'] = prices['expensive_copy']/prices['cheapest_copy']
+
+unique_cards = prices.loc[prices['Unnamed: 0'] == 0]
+a = []
+for i in range(10000):
+  test = unique_cards.sample(70, replace=True)
+  a.append(sum(test['expensive_copy'])-sum(test['cheapest_copy']))
+
+sns.set_style("darkgrid")
+sns.histplot(a, stat="density")
+plt.title("10,000 Random Yugioh Decks' Prices")
+plt.xlabel("Difference between most expensive and cheapest printings($)")
+plt.xlim((0,10000))
+plt.show()
 
 d = prices.sort_values('avg_price').tail(10)
-d[['name', 'avg_price']].plot(kind='bar', x='name', xlabel='Card Name')
+d[['name', 'avg_price']].plot(kind='bar', x='name', xlabel='Card Name', ylabel="Price (Dollars)")
 
 d2 = prices.loc[prices["num_printings"] == 1].sort_values('avg_price').tail(10)
-d2[['name', 'avg_price']].plot(kind='bar', x='name', xlabel='Card Name')
+d2[['name', 'avg_price']].plot(kind='bar', x='name', xlabel='Card Name', ylabel="Price (Dollars)")
 
 d
 
